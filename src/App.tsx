@@ -10,6 +10,7 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ToastProvider } from './components/ui/Toast';
 import { CookieConsent } from './components/ui/CookieConsent';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
 // Lazily loaded workspace pages for optimal bundle splitting
 const DashboardPage = React.lazy(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
@@ -64,89 +65,91 @@ function App() {
     <AuthProvider>
       <ToastProvider>
         <BrowserRouter>
-          <React.Suspense
-            fallback={
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
-                  <div
-                    style={{
-                      width: '38px',
-                      height: '38px',
-                      borderRadius: '50%',
-                      border: '3px solid var(--color-primary-soft)',
-                      borderTopColor: 'var(--color-primary)',
-                      animation: 'spin 0.8s linear infinite',
-                    }}
-                  />
-                  <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Loading application module...</span>
+          <ErrorBoundary>
+            <React.Suspense
+              fallback={
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+                    <div
+                      style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '50%',
+                        border: '3px solid var(--color-primary-soft)',
+                        borderTopColor: 'var(--color-primary)',
+                        animation: 'spin 0.8s linear infinite',
+                      }}
+                    />
+                    <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Loading application module...</span>
+                  </div>
                 </div>
-              </div>
-            }
-          >
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
+              }
+            >
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
 
-              {/* Authenticated Workspace Routes */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <DashboardPage />
-                    </AppLayout>
-                  </ProtectedRoute>
-                }
-              />
+                {/* Authenticated Workspace Routes */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <DashboardPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/events/new"
-                element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <EventWizardPage />
-                    </AppLayout>
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/events/new"
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <EventWizardPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/settings"
-                element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <SettingsPage />
-                    </AppLayout>
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <SettingsPage />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Nested Event Workspace Routes */}
-              <Route
-                path="/events/:eventId"
-                element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <EventLayout />
-                    </AppLayout>
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<EventOverviewPage />} />
-                <Route path="budget" element={<BudgetPage />} />
-                <Route path="tasks" element={<TasksPage />} />
-                <Route path="timeline" element={<TimelinePage />} />
-                <Route path="vendors" element={<VendorsPage />} />
-                <Route path="guests" element={<GuestsPage />} />
-                <Route path="assistant" element={<AIAssistantPage />} />
-              </Route>
+                {/* Nested Event Workspace Routes */}
+                <Route
+                  path="/events/:eventId"
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <EventLayout />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<EventOverviewPage />} />
+                  <Route path="budget" element={<BudgetPage />} />
+                  <Route path="tasks" element={<TasksPage />} />
+                  <Route path="timeline" element={<TimelinePage />} />
+                  <Route path="vendors" element={<VendorsPage />} />
+                  <Route path="guests" element={<GuestsPage />} />
+                  <Route path="assistant" element={<AIAssistantPage />} />
+                </Route>
 
-              {/* Fallback 404 Route */}
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </React.Suspense>
+                {/* Fallback 404 Route */}
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </React.Suspense>
+          </ErrorBoundary>
           <CookieConsent />
         </BrowserRouter>
       </ToastProvider>

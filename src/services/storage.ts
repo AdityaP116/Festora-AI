@@ -143,8 +143,8 @@ export const StorageService = {
       if (serverEvent && serverEvent.id) {
         createdId = serverEvent.id;
       }
-    } catch {
-      // Offline or local development fallback
+    } catch (syncErr) {
+      console.warn('Event created in local workspace; cloud sync offline or deferred:', syncErr);
     }
 
     const newEvent: EventDocument = {
@@ -652,8 +652,8 @@ export const StorageService = {
     // Try synchronizing plan application with backend if online
     try {
       await ApiClient.applyEventPlan(eventId, planVersion.id, proposal, changeSummary);
-    } catch {
-      // Offline fallback
+    } catch (syncErr) {
+      console.warn('Plan applied to local workspace; cloud sync offline or deferred:', syncErr);
     }
 
     return planVersion;
