@@ -1,0 +1,17 @@
+{
+  "name": "Festora AI — Celebration Planner",
+  "short_name": "Festora AI",
+  "description": "GenAI celebration and event planner. Plan weddings, birthdays, anniversaries, and community gatherings with structured AI plans.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF8F5",
+  "theme_color": "#6543A5",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

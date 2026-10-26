@@ -1,0 +1,128 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions for security and ownership verification
+    function isAuthenticated() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidTimestamp(val) {
+      return val is timestamp || (val is string && val.size() > 0);
+    }
+
+    // User profile document
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isOwner(userId);
+      allow delete: if false; // User deletion handled via admin auth workflow
+
+      // Events nested under user for strict owner isolation (DATA_MODEL.md Section 2)
+      match /events/{eventId} {
+        allow read: if isOwner(userId);
+        
+        allow create: if isOwner(userId)
+          && request.resource.data.ownerUid == userId
+          && request.resource.data.title is string
+          && request.resource.data.title.size() >= 3
+          && request.resource.data.title.size() <= 120
+          && request.resource.data.eventType in ['wedding', 'birthday', 'anniversary', 'college_event', 'community_event', 'other']
+          && request.resource.data.guestCount is number
+          && request.resource.data.guestCount >= 1
+          && request.resource.data.budgetLimitMinor is number
+          && request.resource.data.budgetLimitMinor >= 0
+          && request.resource.data.status in ['planning', 'in_progress', 'completed', 'archived'];
+
+        allow update: if isOwner(userId)
+          && request.resource.data.ownerUid == userId
+          && request.resource.data.budgetLimitMinor >= 0;
+
+        allow delete: if isOwner(userId);
+
+        // Subcollection: Tasks
+        match /tasks/{taskId} {
+          allow read: if isOwner(userId);
+          
+          allow create, update: if isOwner(userId)
+            && request.resource.data.title is string
+            && request.resource.data.title.size() >= 1
+            && request.resource.data.priority in ['low', 'medium', 'high', 'critical']
+            && request.resource.data.status in ['pending', 'in_progress', 'completed', 'cancelled']
+            && request.resource.data.source in ['user', 'ai'];
+
+          allow delete: if isOwner(userId);
+        }
+
+        // Subcollection: Expenses
+        match /expenses/{expenseId} {
+          allow read: if isOwner(userId);
+          
+          allow create, update: if isOwner(userId)
+            && request.resource.data.description is string
+            && request.resource.data.categoryKey is string
+            && (!('actualAmountMinor' in request.resource.data) || request.resource.data.actualAmountMinor >= 0)
+            && (!('estimatedAmountMinor' in request.resource.data) || request.resource.data.estimatedAmountMinor >= 0)
+            && request.resource.data.expenseStatus in ['planned', 'incurred', 'cancelled']
+            && request.resource.data.paymentStatus in ['unpaid', 'partially_paid', 'paid', 'refunded', 'not_applicable'];
+
+          allow delete: if isOwner(userId);
+        }
+
+        // Subcollection: Budget categories
+        match /budgets/{categoryId} {
+          allow read: if isOwner(userId);
+          
+          allow create, update: if isOwner(userId)
+            && request.resource.data.estimatedAmountMinor is number
+            && request.resource.data.estimatedAmountMinor >= 0;
+
+          allow delete: if isOwner(userId);
+        }
+
+        // Subcollection: Vendors
+        match /vendors/{vendorId} {
+          allow read: if isOwner(userId);
+          
+          allow create, update: if isOwner(userId)
+            && request.resource.data.name is string
+            && request.resource.data.category is string
+            && request.resource.data.bookingStatus in ['researching', 'contacted', 'quoted', 'shortlisted', 'booked', 'rejected', 'cancelled']
+            && (!('quotedAmountMinor' in request.resource.data) || request.resource.data.quotedAmountMinor >= 0);
+
+          allow delete: if isOwner(userId);
+        }
+
+        // Subcollection: Guests
+        match /guests/{guestId} {
+          allow read: if isOwner(userId);
+          
+          allow create, update: if isOwner(userId)
+            && request.resource.data.displayName is string
+            && request.resource.data.displayName.size() >= 1
+            && request.resource.data.rsvpStatus in ['not_invited', 'invited', 'confirmed', 'declined', 'maybe'];
+
+          allow delete: if isOwner(userId);
+        }
+
+        // Subcollection: Plan Versions (Audit log - immutable snapshots)
+        match /planVersions/{versionId} {
+          allow read: if isOwner(userId);
+          allow create: if isOwner(userId)
+            && request.resource.data.version is number
+            && request.resource.data.schemaVersion == 1
+            && request.resource.data.status in ['proposed', 'applied', 'superseded', 'rejected'];
+          allow update, delete: if false; // Plan versions are immutable audit records
+        }
+      }
+    }
+
+    // Default deny all other paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

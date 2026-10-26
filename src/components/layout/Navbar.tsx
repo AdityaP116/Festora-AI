@@ -1,0 +1,247 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Sparkles, Menu, X, ArrowRight, Calendar } from 'lucide-react';
+import { useAuth } from '../../services/auth-context';
+
+export const Navbar: React.FC = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  return (
+    <header
+      style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        backgroundColor: 'rgba(255, 255, 255, 0.92)',
+        backdropFilter: 'blur(8px)',
+        borderBottom: '1px solid var(--color-border)',
+      }}
+    >
+      <div
+        className="container"
+        style={{
+          height: 'var(--header-height)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        {/* Brand Logo */}
+        <Link
+          to="/"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.6rem',
+            color: 'var(--color-text)',
+            fontWeight: 700,
+            fontSize: '1.25rem',
+            letterSpacing: '-0.02em',
+          }}
+        >
+          <div
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: 'var(--radius-md)',
+              background: 'linear-gradient(135deg, var(--color-primary), #8E54E9)',
+              color: '#FFFFFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(101, 67, 165, 0.3)',
+            }}
+          >
+            <Sparkles size={20} />
+          </div>
+          <span>Festora<span style={{ color: 'var(--color-primary)' }}> AI</span></span>
+        </Link>
+
+        {/* Desktop Navigation */}
+        <nav
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '2rem',
+          }}
+          className="desktop-nav"
+        >
+          <a
+            href="#how-it-works"
+            style={{ fontSize: '0.925rem', fontWeight: 500, color: 'var(--color-text-secondary)' }}
+          >
+            How it works
+          </a>
+          <a
+            href="#features"
+            style={{ fontSize: '0.925rem', fontWeight: 500, color: 'var(--color-text-secondary)' }}
+          >
+            Features
+          </a>
+          <a
+            href="#occasions"
+            style={{ fontSize: '0.925rem', fontWeight: 500, color: 'var(--color-text-secondary)' }}
+          >
+            Occasions
+          </a>
+          <a
+            href="#faq"
+            style={{ fontSize: '0.925rem', fontWeight: 500, color: 'var(--color-text-secondary)' }}
+          >
+            FAQ
+          </a>
+        </nav>
+
+        {/* Desktop Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }} className="desktop-actions">
+          {user ? (
+            <>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => navigate('/dashboard')}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                <Calendar size={16} />
+                <span>My Events</span>
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => navigate('/events/new')}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                <Sparkles size={16} />
+                <span>Plan Event</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="btn btn-ghost btn-sm">
+                Sign in
+              </Link>
+              <Link to="/events/new" className="btn btn-primary btn-sm">
+                <span>Start Planning</span>
+                <ArrowRight size={15} />
+              </Link>
+            </>
+          )}
+        </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          type="button"
+          className="btn btn-ghost btn-icon mobile-menu-btn"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+        >
+          {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
+      </div>
+
+      {/* Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div
+          style={{
+            padding: '1.25rem 1.5rem',
+            backgroundColor: 'var(--color-surface)',
+            borderTop: '1px solid var(--color-border)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1rem',
+          }}
+          className="mobile-drawer"
+        >
+          <a
+            href="#how-it-works"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ fontSize: '1rem', color: 'var(--color-text)', padding: '0.5rem 0' }}
+          >
+            How it works
+          </a>
+          <a
+            href="#features"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ fontSize: '1rem', color: 'var(--color-text)', padding: '0.5rem 0' }}
+          >
+            Features
+          </a>
+          <a
+            href="#occasions"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ fontSize: '1rem', color: 'var(--color-text)', padding: '0.5rem 0' }}
+          >
+            Occasions
+          </a>
+          <a
+            href="#faq"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ fontSize: '1rem', color: 'var(--color-text)', padding: '0.5rem 0' }}
+          >
+            FAQ
+          </a>
+          <div style={{ height: '1px', backgroundColor: 'var(--color-border)', margin: '0.5rem 0' }} />
+          {user ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  navigate('/dashboard');
+                }}
+              >
+                Go to Dashboard
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  navigate('/events/new');
+                }}
+              >
+                Plan New Event
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <Link
+                to="/login"
+                className="btn btn-secondary"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Sign in
+              </Link>
+              <Link
+                to="/events/new"
+                className="btn btn-primary"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Start Planning
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
+
+      <style>{`
+        @media (max-width: 768px) {
+          .desktop-nav, .desktop-actions {
+            display: none !important;
+          }
+          .mobile-menu-btn {
+            display: inline-flex !important;
+          }
+        }
+        @media (min-width: 769px) {
+          .mobile-menu-btn, .mobile-drawer {
+            display: none !important;
+          }
+        }
+      `}</style>
+    </header>
+  );
+};

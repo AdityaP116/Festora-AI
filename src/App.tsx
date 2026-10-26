@@ -1,122 +1,157 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './services/auth-context';
+import { AppLayout } from './components/layout/AppLayout';
+import { EventLayout } from './components/layout/EventLayout';
+
+// Eagerly loaded public entry pages
+import { LandingPage } from './pages/LandingPage';
+import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
+import { ToastProvider } from './components/ui/Toast';
+import { CookieConsent } from './components/ui/CookieConsent';
+
+// Lazily loaded workspace pages for optimal bundle splitting
+const DashboardPage = React.lazy(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
+const EventWizardPage = React.lazy(() => import('./pages/EventWizardPage').then((m) => ({ default: m.EventWizardPage })));
+const SettingsPage = React.lazy(() => import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
+const NotFoundPage = React.lazy(() => import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
+
+// Event Workspace Pages
+const EventOverviewPage = React.lazy(() => import('./pages/event/EventOverviewPage').then((m) => ({ default: m.EventOverviewPage })));
+const BudgetPage = React.lazy(() => import('./pages/event/BudgetPage').then((m) => ({ default: m.BudgetPage })));
+const TasksPage = React.lazy(() => import('./pages/event/TasksPage').then((m) => ({ default: m.TasksPage })));
+const TimelinePage = React.lazy(() => import('./pages/event/TimelinePage').then((m) => ({ default: m.TimelinePage })));
+const VendorsPage = React.lazy(() => import('./pages/event/VendorsPage').then((m) => ({ default: m.VendorsPage })));
+const GuestsPage = React.lazy(() => import('./pages/event/GuestsPage').then((m) => ({ default: m.GuestsPage })));
+const AIAssistantPage = React.lazy(() => import('./pages/event/AIAssistantPage').then((m) => ({ default: m.AIAssistantPage })));
+
+// Protected Route Component
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, isLoading } = useAuth();
+  const location = useLocation();
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+          <div
+            style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '50%',
+              border: '3px solid var(--color-primary-soft)',
+              borderTopColor: 'var(--color-primary)',
+              animation: 'spin 0.8s linear infinite',
+            }}
+          />
+          <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Verifying session...</span>
+        </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <AuthProvider>
+      <ToastProvider>
+        <BrowserRouter>
+          <React.Suspense
+            fallback={
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+                  <div
+                    style={{
+                      width: '38px',
+                      height: '38px',
+                      borderRadius: '50%',
+                      border: '3px solid var(--color-primary-soft)',
+                      borderTopColor: 'var(--color-primary)',
+                      animation: 'spin 0.8s linear infinite',
+                    }}
+                  />
+                  <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Loading application module...</span>
+                </div>
+              </div>
+            }
+          >
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
 
-      <div className="ticks"></div>
+              {/* Authenticated Workspace Routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <DashboardPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+              <Route
+                path="/events/new"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <EventWizardPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <SettingsPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Nested Event Workspace Routes */}
+              <Route
+                path="/events/:eventId"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <EventLayout />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<EventOverviewPage />} />
+                <Route path="budget" element={<BudgetPage />} />
+                <Route path="tasks" element={<TasksPage />} />
+                <Route path="timeline" element={<TimelinePage />} />
+                <Route path="vendors" element={<VendorsPage />} />
+                <Route path="guests" element={<GuestsPage />} />
+                <Route path="assistant" element={<AIAssistantPage />} />
+              </Route>
+
+              {/* Fallback 404 Route */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </React.Suspense>
+          <CookieConsent />
+        </BrowserRouter>
+      </ToastProvider>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
