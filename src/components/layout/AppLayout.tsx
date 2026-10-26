@@ -84,20 +84,16 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               letterSpacing: '-0.02em',
             }}
           >
-            <div
+            <img
+              src="/logo.png"
+              alt="Festora AI Logo"
               style={{
                 width: '32px',
                 height: '32px',
+                objectFit: 'contain',
                 borderRadius: 'var(--radius-md)',
-                background: 'linear-gradient(135deg, var(--color-primary), #8E54E9)',
-                color: '#FFFFFF',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
               }}
-            >
-              <Sparkles size={18} />
-            </div>
+            />
             <span>Festora<span style={{ color: 'var(--color-primary)' }}> AI</span></span>
           </Link>
           <button

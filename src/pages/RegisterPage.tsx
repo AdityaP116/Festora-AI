@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Sparkles, Eye, EyeOff, UserPlus } from 'lucide-react';
+import { Eye, EyeOff, UserPlus } from 'lucide-react';
 import { useAuth } from '../services/auth-context';
 import { SeoHead } from '../components/seo/SeoHead';
 
@@ -77,20 +77,17 @@ export const RegisterPage: React.FC = () => {
           marginBottom: '2rem',
         }}
       >
-        <div
+        <img
+          src="/logo.png"
+          alt="Festora AI Logo"
           style={{
-            width: '36px',
-            height: '36px',
+            width: '42px',
+            height: '42px',
+            objectFit: 'contain',
             borderRadius: 'var(--radius-md)',
-            background: 'linear-gradient(135deg, var(--color-primary), #8E54E9)',
-            color: '#FFFFFF',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            boxShadow: '0 2px 8px rgba(101, 67, 165, 0.15)',
           }}
-        >
-          <Sparkles size={20} />
-        </div>
+        />
         <span>Festora<span style={{ color: 'var(--color-primary)' }}> AI</span></span>
       </Link>
 

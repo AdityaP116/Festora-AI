@@ -14,7 +14,7 @@ const DEFAULT_TITLE = 'Festora AI — AI Celebration & Event Planner';
 const DEFAULT_DESC =
   'Plan weddings, birthdays, anniversaries, and community gatherings with structured AI plans, deterministic budgets, task checklists, and timelines.';
 const SITE_URL = 'https://festora.ai';
-const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.svg`;
+const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`;
 
 export const SeoHead: React.FC<SeoProps> = ({
   title,

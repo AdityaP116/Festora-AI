@@ -78,20 +78,17 @@ export const LoginPage: React.FC = () => {
           marginBottom: '2rem',
         }}
       >
-        <div
+        <img
+          src="/logo.png"
+          alt="Festora AI Logo"
           style={{
-            width: '36px',
-            height: '36px',
+            width: '42px',
+            height: '42px',
+            objectFit: 'contain',
             borderRadius: 'var(--radius-md)',
-            background: 'linear-gradient(135deg, var(--color-primary), #8E54E9)',
-            color: '#FFFFFF',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            boxShadow: '0 2px 8px rgba(101, 67, 165, 0.15)',
           }}
-        >
-          <Sparkles size={20} />
-        </div>
+        />
         <span>Festora<span style={{ color: 'var(--color-primary)' }}> AI</span></span>
       </Link>
 

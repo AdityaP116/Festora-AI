@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, ShieldCheck, Heart } from 'lucide-react';
+import { ShieldCheck, Heart } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
@@ -34,20 +34,16 @@ export const Footer: React.FC = () => {
                 marginBottom: '0.85rem',
               }}
             >
-              <div
+              <img
+                src="/logo.png"
+                alt="Festora AI Logo"
                 style={{
-                  width: '32px',
-                  height: '32px',
+                  width: '34px',
+                  height: '34px',
+                  objectFit: 'contain',
                   borderRadius: 'var(--radius-md)',
-                  background: 'linear-gradient(135deg, var(--color-primary), #8E54E9)',
-                  color: '#FFFFFF',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                 }}
-              >
-                <Sparkles size={18} />
-              </div>
+              />
               <span>Festora<span style={{ color: 'var(--color-primary)' }}> AI</span></span>
             </div>
             <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>

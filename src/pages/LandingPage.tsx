@@ -142,8 +142,8 @@ export const LandingPage: React.FC = () => {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.4rem',
-                  padding: '0.35rem 0.85rem',
+                  gap: '0.5rem',
+                  padding: '0.35rem 0.85rem 0.35rem 0.45rem',
                   borderRadius: 'var(--radius-full)',
                   backgroundColor: 'var(--color-primary-soft)',
                   color: 'var(--color-primary)',
@@ -152,7 +152,11 @@ export const LandingPage: React.FC = () => {
                   marginBottom: '1.25rem',
                 }}
               >
-                <Sparkles size={16} />
+                <img
+                  src="/logo.png"
+                  alt="Festora AI"
+                  style={{ width: '22px', height: '22px', objectFit: 'contain', borderRadius: '50%' }}
+                />
                 <span>GenAI Celebration & Event Planner</span>
               </div>
 
@@ -249,7 +253,12 @@ export const LandingPage: React.FC = () => {
                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#EF4444' }} />
                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#F59E0B' }} />
                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#10B981' }} />
-                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-text-muted)', marginLeft: '0.4rem' }}>
+                    <img
+                      src="/logo.png"
+                      alt="Festora AI"
+                      style={{ width: '18px', height: '18px', objectFit: 'contain', marginLeft: '0.4rem', borderRadius: '2px' }}
+                    />
+                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>
                       Festora AI Workspace
                     </span>
                   </div>
