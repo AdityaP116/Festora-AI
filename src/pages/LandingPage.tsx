@@ -775,7 +775,7 @@ export const LandingPage: React.FC = () => {
                   key={t.id}
                   type="button"
                   className={calcEventType === t.id ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}
-                  onClick={() => setCalcEventType(t.id as any)}
+                  onClick={() => setCalcEventType(t.id as 'wedding' | 'birthday' | 'corporate' | 'anniversary')}
                   style={{ borderRadius: 'var(--radius-full)', fontSize: '0.825rem' }}
                 >
                   {t.label}

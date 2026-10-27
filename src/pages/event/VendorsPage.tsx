@@ -43,6 +43,11 @@ export const VendorsPage: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
 
+  // Filter & Search states
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
   useEffect(() => {
     async function loadData() {
       if (!user || !eventId) return;
@@ -162,11 +167,6 @@ export const VendorsPage: React.FC = () => {
       </div>
     );
   }
-
-  // Filter & Search states
-  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
-  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const categoryPresets = [
     { id: 'catering', label: 'Catering & Food', defaultBudget: '₹1,500/plate', sampleQuestions: 'Includes crockery, live counters, waitstaff?' },

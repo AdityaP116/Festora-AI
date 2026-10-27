@@ -61,8 +61,9 @@ class AnalyticsService {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('festora:analytics', { detail: payload }));
       // Forward to window.dataLayer if GTM / GA4 exists
-      if (Array.isArray((window as any).dataLayer)) {
-        (window as any).dataLayer.push({ event: eventName, ...properties });
+      const win = window as unknown as { dataLayer?: unknown[] };
+      if (Array.isArray(win.dataLayer)) {
+        win.dataLayer.push({ event: eventName, ...properties });
       }
     }
 

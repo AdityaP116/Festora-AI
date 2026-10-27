@@ -12,7 +12,7 @@ export interface BreadcrumbsProps {
 }
 
 export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items }) => {
-  const fullItems: BreadcrumbItem[] = [{ label: 'Home', path: '/' }, ...items];
+  const fullItems: BreadcrumbItem[] = React.useMemo(() => [{ label: 'Home', path: '/' }, ...items], [items]);
 
   // Inject Schema.org BreadcrumbList structured data
   useEffect(() => {
@@ -43,7 +43,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items }) => {
         script.parentNode.removeChild(script);
       }
     };
-  }, [items]);
+  }, [fullItems]);
 
   return (
     <nav aria-label="Breadcrumb" style={{ marginBottom: '1.25rem' }}>

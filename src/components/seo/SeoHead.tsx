@@ -115,8 +115,8 @@ export const SeoHead: React.FC<SeoProps> = ({
 
     const finalSchema = structuredData
       ? Array.isArray(structuredData)
-        ? { '@context': 'https://schema.org', '@graph': [...(defaultSchema['@graph'] as any[]), ...structuredData] }
-        : { '@context': 'https://schema.org', '@graph': [...(defaultSchema['@graph'] as any[]), structuredData] }
+        ? { '@context': 'https://schema.org', '@graph': [...(defaultSchema['@graph'] as Record<string, unknown>[]), ...structuredData] }
+        : { '@context': 'https://schema.org', '@graph': [...(defaultSchema['@graph'] as Record<string, unknown>[]), structuredData] }
       : defaultSchema;
 
     script.textContent = JSON.stringify(finalSchema);

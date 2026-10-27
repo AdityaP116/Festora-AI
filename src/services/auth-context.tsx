@@ -246,7 +246,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             fbCode === 'auth/popup-closed-by-user' ||
             fbCode === 'auth/cancelled-popup-request'
           ) {
-            throw new Error('Google Sign-In was cancelled.');
+            throw new Error('Google Sign-In was cancelled.', { cause: fbErr });
           }
           if (
             fbCode === 'auth/network-request-failed' ||
@@ -311,7 +311,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (fbErr: unknown) {
           const fbCode = (fbErr as { code?: string })?.code;
           if (fbCode === 'auth/requires-recent-login') {
-            throw new Error('For security, please sign in again before deleting your account.');
+            throw new Error('For security, please sign in again before deleting your account.', { cause: fbErr });
           }
           console.warn('Firebase account deletion encountered error:', fbErr);
         }
@@ -328,7 +328,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const parsed = JSON.parse(raw);
             if (parsed.events) {
               for (const [id, evt] of Object.entries(parsed.events)) {
-                if ((evt as any).ownerUid === user.uid) {
+                if ((evt as { ownerUid?: string }).ownerUid === user.uid) {
                   delete parsed.events[id];
                 }
               }
