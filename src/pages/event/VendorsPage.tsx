@@ -163,6 +163,51 @@ export const VendorsPage: React.FC = () => {
     );
   }
 
+  // Filter & Search states
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  const categoryPresets = [
+    { id: 'catering', label: 'Catering & Food', defaultBudget: '₹1,500/plate', sampleQuestions: 'Includes crockery, live counters, waitstaff?' },
+    { id: 'venue', label: 'Banquet & Venue', defaultBudget: '₹1.5L - ₹5L/day', sampleQuestions: 'AC backup, outside catering allowed, sound license?' },
+    { id: 'photography', label: 'Photography & Cinema', defaultBudget: '₹40k - ₹1.5L', sampleQuestions: 'Deliverables timeline, drone coverage, raw footage?' },
+    { id: 'decor', label: 'Decor & Florals', defaultBudget: '₹50k - ₹2L', sampleQuestions: 'Stage backdrop, flower type (real vs artificial), lighting?' },
+    { id: 'music', label: 'DJ & Sound System', defaultBudget: '₹15k - ₹40k', sampleQuestions: 'Console included, overtime charges, playlist sync?' },
+    { id: 'makeup', label: 'Hair & Makeup', defaultBudget: '₹8k - ₹25k', sampleQuestions: 'Draping included, trial session, bridal touchups?' },
+    { id: 'transport', label: 'Guest Transport', defaultBudget: '₹10k - ₹35k', sampleQuestions: 'Driver allowance, luggage space, AC buses?' },
+  ];
+
+  const handleOpenAddWithCategory = (cat: string) => {
+    setEditingVendor(null);
+    setName('');
+    setCategory(cat);
+    setContactName('');
+    setPhone('');
+    setEmail('');
+    setWebsite('');
+    setQuotedMajor(0);
+    setBookingStatus('researching');
+    setNotes('');
+    setFormError(null);
+    setIsModalOpen(true);
+  };
+
+  const filteredVendors = vendors.filter((v) => {
+    const matchesCategory = selectedCategoryFilter === 'all' || v.category === selectedCategoryFilter;
+    const matchesStatus = selectedStatusFilter === 'all' || v.bookingStatus === selectedStatusFilter;
+    const matchesSearch = !searchQuery.trim() || 
+      v.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      (v.contactName && v.contactName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (v.notes && v.notes.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesCategory && matchesStatus && matchesSearch;
+  });
+
+  const totalQuotedMinor = vendors.reduce((acc, curr) => acc + (curr.quotedAmountMinor || 0), 0);
+  const totalBookedMinor = vendors
+    .filter((v) => v.bookingStatus === 'booked')
+    .reduce((acc, curr) => acc + (curr.quotedAmountMinor || 0), 0);
+
   const getStatusBadgeVariant = (status: BookingStatus) => {
     switch (status) {
       case 'booked':
@@ -182,15 +227,15 @@ export const VendorsPage: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
       {/* Header and Add Button */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h2 style={{ fontSize: '1.45rem', fontWeight: 700, color: 'var(--color-text)' }}>
-            Vendor Records & Quote Comparisons
+            Vendor Directory & Quote Comparisons
           </h2>
           <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', marginTop: '0.2rem' }}>
-            Store your personal vendor candidates, phone numbers, quotes, and booking statuses.
+            Compare proposals, track booking milestones, and record vendor quotes for your celebration.
           </p>
         </div>
 
@@ -203,6 +248,163 @@ export const VendorsPage: React.FC = () => {
           <Plus size={16} />
           <span>Add Vendor</span>
         </button>
+      </div>
+
+      {/* Quote Benchmarks & Summary Cards (PlanToday Style) */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: '1rem',
+        }}
+      >
+        <div className="card" style={{ padding: '1.25rem', backgroundColor: '#FFFFFF', borderRadius: 'var(--radius-lg)' }}>
+          <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>Total Vendors Listed</span>
+          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-text)', marginTop: '0.25rem' }}>
+            {vendors.length}
+          </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
+            Across {new Set(vendors.map(v => v.category)).size} categories
+          </span>
+        </div>
+
+        <div className="card" style={{ padding: '1.25rem', backgroundColor: '#FFFFFF', borderRadius: 'var(--radius-lg)' }}>
+          <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>Total Quoted Value</span>
+          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-primary)', marginTop: '0.25rem' }}>
+            {formatCurrency(totalQuotedMinor, event.currency)}
+          </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
+            Across all candidate quotes
+          </span>
+        </div>
+
+        <div className="card" style={{ padding: '1.25rem', backgroundColor: '#FFFFFF', borderRadius: 'var(--radius-lg)' }}>
+          <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>Confirmed Bookings</span>
+          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-success)', marginTop: '0.25rem' }}>
+            {formatCurrency(totalBookedMinor, event.currency)}
+          </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
+            {vendors.filter(v => v.bookingStatus === 'booked').length} confirmed supplier(s)
+          </span>
+        </div>
+      </div>
+
+      {/* Quick Add By Category (PlanToday inspired category tiles) */}
+      <div
+        style={{
+          backgroundColor: '#FFFFFF',
+          padding: '1.25rem',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--color-border)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
+          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-text)' }}>
+            Quick-Add Indian Event Services:
+          </span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+            Click any category to log details
+          </span>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {categoryPresets.map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => handleOpenAddWithCategory(cat.id)}
+              style={{
+                padding: '0.4rem 0.85rem',
+                borderRadius: 'var(--radius-full)',
+                backgroundColor: 'var(--color-surface-muted)',
+                border: '1px solid var(--color-border)',
+                fontSize: '0.825rem',
+                color: 'var(--color-text)',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-primary-soft)';
+                e.currentTarget.style.borderColor = 'var(--color-primary)';
+                e.currentTarget.style.color = 'var(--color-primary)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-surface-muted)';
+                e.currentTarget.style.borderColor = 'var(--color-border)';
+                e.currentTarget.style.color = 'var(--color-text)';
+              }}
+            >
+              <Plus size={12} />
+              <span>{cat.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Search and Filters Bar */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          backgroundColor: '#FFFFFF',
+          padding: '1rem 1.25rem',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--color-border)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', flex: 1 }}>
+          <input
+            type="text"
+            className="form-input"
+            placeholder="Search vendors by name, contact or notes..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ maxWidth: '320px', fontSize: '0.85rem' }}
+          />
+
+          {/* Category Filter */}
+          <select
+            className="form-select"
+            value={selectedCategoryFilter}
+            onChange={(e) => setSelectedCategoryFilter(e.target.value)}
+            style={{ maxWidth: '180px', fontSize: '0.85rem' }}
+          >
+            <option value="all">All Categories</option>
+            <option value="catering">Catering & Food</option>
+            <option value="venue">Banquet / Venue</option>
+            <option value="photography">Photography & Cinema</option>
+            <option value="decor">Decor & Florals</option>
+            <option value="music">DJ / Sound System</option>
+            <option value="makeup">Hair & Makeup</option>
+            <option value="transport">Transportation</option>
+            <option value="other">Other Service</option>
+          </select>
+
+          {/* Status Filter */}
+          <select
+            className="form-select"
+            value={selectedStatusFilter}
+            onChange={(e) => setSelectedStatusFilter(e.target.value)}
+            style={{ maxWidth: '160px', fontSize: '0.85rem' }}
+          >
+            <option value="all">All Statuses</option>
+            <option value="researching">Researching</option>
+            <option value="contacted">Contacted</option>
+            <option value="quoted">Quoted</option>
+            <option value="shortlisted">Shortlisted</option>
+            <option value="booked">Booked</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+
+        <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+          Showing {filteredVendors.length} of {vendors.length} vendors
+        </span>
       </div>
 
       {/* Trust Notice */}
@@ -221,18 +423,20 @@ export const VendorsPage: React.FC = () => {
       >
         <ShieldCheck size={18} color="var(--color-primary)" />
         <span>
-          <strong>User-Entered Directory:</strong> These records are private to your event workspace. Festora AI does not claim live inventory or automatic bookings without direct vendor communication.
+          <strong>Private Workspace Directory:</strong> Compare multiple quotes side-by-side. Festora AI operates with zero vendor commissions.
         </span>
       </div>
 
       {/* Vendors Grid */}
-      {vendors.length === 0 ? (
+      {filteredVendors.length === 0 ? (
         <EmptyState
           icon={Store}
-          title="No vendors recorded yet"
-          description="Log caterers, photographers, sound technicians, and decorators you are considering to compare quotes and contacts."
-          actionText="Add First Vendor"
-          onAction={handleOpenAdd}
+          title={vendors.length === 0 ? "No vendors recorded yet" : "No vendors match your search filters"}
+          description={vendors.length === 0 
+            ? "Log caterers, photographers, sound technicians, and decorators you are considering to compare quotes and contacts."
+            : "Try adjusting your category or status filters to view logged vendors."}
+          actionText={vendors.length === 0 ? "Add First Vendor" : "Clear Filters"}
+          onAction={vendors.length === 0 ? handleOpenAdd : () => { setSelectedCategoryFilter('all'); setSelectedStatusFilter('all'); setSearchQuery(''); }}
         />
       ) : (
         <div
@@ -242,7 +446,7 @@ export const VendorsPage: React.FC = () => {
             gap: '1.25rem',
           }}
         >
-          {vendors.map((v) => (
+          {filteredVendors.map((v) => (
             <div key={v.id} className="card card-hover" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>

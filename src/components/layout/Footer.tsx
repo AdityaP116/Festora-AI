@@ -98,6 +98,53 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
+          {/* Legal & Trust Column */}
+          <div>
+            <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--color-text)', marginBottom: '1rem' }}>
+              Legal & Trust
+            </h4>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.9rem' }}>
+              <li>
+                <Link to="/terms" style={{ color: 'var(--color-text-secondary)' }}>
+                  Terms & Conditions
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" style={{ color: 'var(--color-text-secondary)' }}>
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/about" style={{ color: 'var(--color-text-secondary)' }}>
+                  About Festora AI
+                </Link>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      window.dispatchEvent(new CustomEvent('festora:open-cookie-preferences'));
+                    }
+                  }}
+                  style={{
+                    color: 'var(--color-text-secondary)',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    font: 'inherit',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-primary)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-secondary)')}
+                >
+                  Cookie Preferences
+                </button>
+              </li>
+            </ul>
+          </div>
+
           {/* AI Transparency & Trust */}
           <div style={{ backgroundColor: 'var(--color-surface-muted)', padding: '1.25rem', borderRadius: 'var(--radius-lg)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.4rem' }}>
@@ -110,7 +157,7 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom copyright */}
+        {/* Bottom copyright notice */}
         <div
           style={{
             borderTop: '1px solid var(--color-border)',
@@ -125,12 +172,23 @@ export const Footer: React.FC = () => {
           }}
         >
           <div>
-            © {new Date().getFullYear()} Festora AI. Designed for stress-free celebration planning.
+            © {new Date().getFullYear()} Festora AI. All rights reserved. Designed for stress-free celebration planning.
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <span>Crafted with</span>
-            <Heart size={14} color="var(--color-primary)" fill="var(--color-primary)" />
-            <span>for organizers everywhere</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+            <Link to="/terms" style={{ color: 'var(--color-text-muted)', fontSize: '0.825rem' }}>
+              Terms
+            </Link>
+            <Link to="/privacy" style={{ color: 'var(--color-text-muted)', fontSize: '0.825rem' }}>
+              Privacy
+            </Link>
+            <Link to="/about" style={{ color: 'var(--color-text-muted)', fontSize: '0.825rem' }}>
+              About
+            </Link>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <span>Crafted with</span>
+              <Heart size={14} color="var(--color-primary)" fill="var(--color-primary)" />
+              <span>for organizers</span>
+            </div>
           </div>
         </div>
       </div>

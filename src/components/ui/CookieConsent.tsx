@@ -28,6 +28,15 @@ export const CookieConsent: React.FC = () => {
     }
   }, []);
 
+  // Listen for custom trigger to reopen preferences modal from Footer or Settings
+  useEffect(() => {
+    const handleOpenTrigger = () => {
+      setShowModal(true);
+    };
+    window.addEventListener('festora:open-cookie-preferences', handleOpenTrigger);
+    return () => window.removeEventListener('festora:open-cookie-preferences', handleOpenTrigger);
+  }, []);
+
   const handleAcceptAll = () => {
     localStorage.setItem(STORAGE_KEY, 'accepted');
     localStorage.setItem(PREFS_KEY, JSON.stringify({ essential: true, analytics: true, marketing: true }));

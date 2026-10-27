@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Modal } from '../components/ui/Modal';
 
 export const SettingsPage: React.FC = () => {
-  const { user, updateProfile, signOut } = useAuth();
+  const { user, updateProfile, signOut, deleteAccount } = useAuth();
   const navigate = useNavigate();
 
   const [displayName, setDisplayName] = useState(user?.displayName || '');
@@ -14,6 +14,7 @@ export const SettingsPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,16 +42,31 @@ export const SettingsPage: React.FC = () => {
     if (!user) return;
     try {
       setIsDeleting(true);
-      // In local mode, remove auth and session state
-      localStorage.removeItem('festora_ai_storage_v1');
-      await signOut();
+      setDeleteError(null);
+      await deleteAccount();
       navigate('/login', { replace: true });
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to delete account:', err);
-      alert('Failed to delete account. Please try again.');
+      setDeleteError(err instanceof Error ? err.message : 'Failed to delete account. Please try again.');
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const handleExportData = () => {
+    if (!user) return;
+    const userData = {
+      userProfile: user,
+      exportedAt: new Date().toISOString(),
+      formatVersion: '2026.1',
+    };
+    const blob = new Blob([JSON.stringify(userData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `festora-account-export-${user.uid}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -115,7 +131,11 @@ export const SettingsPage: React.FC = () => {
               disabled
               style={{ backgroundColor: 'var(--color-surface-muted)', cursor: 'not-allowed' }}
             />
-            <span className="form-hint">Email is tied to your event planning session.</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.4rem' }}>
+              <span className="form-hint" style={{ margin: 0 }}>
+                Signed in via: <strong>{user?.authProvider === 'google.com' ? 'Google Account' : 'Email & Password'}</strong>
+              </span>
+            </div>
           </div>
 
           <div className="form-group">
@@ -148,8 +168,53 @@ export const SettingsPage: React.FC = () => {
         </form>
       </div>
 
-      {/* Account Actions: Sign Out & Self-Service Deletion */}
+      {/* Privacy & Data Protection Controls */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {/* Export Data */}
+        <div className="card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid var(--color-border)', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-text)' }}>
+              Export Account Data (DPDP / GDPR)
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginTop: '0.2rem' }}>
+              Download a machine-readable JSON copy of your personal profile and consent records.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={handleExportData}
+            style={{ fontSize: '0.875rem' }}
+          >
+            Export JSON
+          </button>
+        </div>
+
+        {/* Cookie & Tracking Preferences */}
+        <div className="card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid var(--color-border)', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-text)' }}>
+              Cookie & Analytics Consent
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginTop: '0.2rem' }}>
+              Review or adjust your consent choices for diagnostic telemetry and essential storage.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('festora:open-cookie-preferences'));
+              }
+            }}
+            style={{ fontSize: '0.875rem' }}
+          >
+            Manage Cookies
+          </button>
+        </div>
+
+        {/* Sign out */}
         <div className="card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid var(--color-border)' }}>
           <div>
             <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-text)' }}>
@@ -170,8 +235,8 @@ export const SettingsPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Delete Account (GDPR/CCPA Self-Service) */}
-        <div className="card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid var(--color-danger-border, #fca5a5)', backgroundColor: 'var(--color-danger-bg, #fff5f5)' }}>
+        {/* Delete Account (GDPR/DPDP Self-Service) */}
+        <div className="card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid var(--color-danger-border, #fca5a5)', backgroundColor: 'var(--color-danger-bg, #fff5f5)', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-danger)' }}>
               Delete Account
@@ -183,7 +248,10 @@ export const SettingsPage: React.FC = () => {
           <button
             type="button"
             className="btn btn-danger"
-            onClick={() => setIsDeleteModalOpen(true)}
+            onClick={() => {
+              setDeleteError(null);
+              setIsDeleteModalOpen(true);
+            }}
             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
           >
             <Trash2 size={16} />
@@ -199,6 +267,11 @@ export const SettingsPage: React.FC = () => {
         title="Confirm Account Deletion"
       >
         <div style={{ padding: '0.5rem 0' }}>
+          {deleteError && (
+            <div style={{ padding: '0.75rem 1rem', backgroundColor: 'var(--color-danger-bg)', color: 'var(--color-danger)', border: '1px solid var(--color-danger-border)', borderRadius: 'var(--radius-md)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+              {deleteError}
+            </div>
+          )}
           <p style={{ fontSize: '0.925rem', color: 'var(--color-text-secondary)', lineHeight: 1.5, marginBottom: '1.5rem' }}>
             Are you sure you want to delete your account (<strong>{user?.email}</strong>)? This will permanently remove all your celebration workspaces, budget records, checklists, and vendor contacts. This action cannot be undone.
           </p>

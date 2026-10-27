@@ -218,10 +218,22 @@ export interface PlanVersionDocument {
   status: 'proposed' | 'applied' | 'superseded' | 'rejected';
 }
 
+export interface ConsentRecord {
+  termsAccepted: boolean;
+  termsVersion: string;
+  privacyAcknowledged: boolean;
+  privacyVersion: string;
+  acceptedAt: string; // ISO timestamp
+  marketingOptIn?: boolean;
+}
+
 export interface UserProfile {
   uid: string;
   email: string;
   displayName: string;
   defaultCurrency: string;
   createdAt: string;
+  authProvider?: 'password' | 'google.com' | 'demo';
+  photoURL?: string;
+  consent?: ConsentRecord;
 }

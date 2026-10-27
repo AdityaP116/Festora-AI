@@ -12,11 +12,14 @@ import { ToastProvider } from './components/ui/Toast';
 import { CookieConsent } from './components/ui/CookieConsent';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
-// Lazily loaded workspace pages for optimal bundle splitting
+// Lazily loaded workspace & public legal pages for optimal bundle splitting
 const DashboardPage = React.lazy(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
 const EventWizardPage = React.lazy(() => import('./pages/EventWizardPage').then((m) => ({ default: m.EventWizardPage })));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const NotFoundPage = React.lazy(() => import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
+const TermsPage = React.lazy(() => import('./pages/TermsPage').then((m) => ({ default: m.TermsPage })));
+const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage').then((m) => ({ default: m.PrivacyPage })));
+const AboutPage = React.lazy(() => import('./pages/AboutPage').then((m) => ({ default: m.AboutPage })));
 
 // Event Workspace Pages
 const EventOverviewPage = React.lazy(() => import('./pages/event/EventOverviewPage').then((m) => ({ default: m.EventOverviewPage })));
@@ -90,6 +93,9 @@ function App() {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/about" element={<AboutPage />} />
 
                 {/* Authenticated Workspace Routes */}
                 <Route

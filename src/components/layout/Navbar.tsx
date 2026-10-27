@@ -60,30 +60,37 @@ export const Navbar: React.FC = () => {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '2rem',
+            gap: '1.75rem',
           }}
           className="desktop-nav"
         >
           <a
-            href="#how-it-works"
+            href="/#quick-calculator"
+            style={{ fontSize: '0.925rem', fontWeight: 500, color: 'var(--color-text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+          >
+            <span>Calculator</span>
+            <span style={{ fontSize: '0.65rem', backgroundColor: 'var(--color-primary-soft)', color: 'var(--color-primary)', padding: '0.1rem 0.4rem', borderRadius: '4px', fontWeight: 700 }}>FREE</span>
+          </a>
+          <a
+            href="/#how-it-works"
             style={{ fontSize: '0.925rem', fontWeight: 500, color: 'var(--color-text-secondary)' }}
           >
             How it works
           </a>
           <a
-            href="#features"
+            href="/#features"
             style={{ fontSize: '0.925rem', fontWeight: 500, color: 'var(--color-text-secondary)' }}
           >
             Features
           </a>
           <a
-            href="#occasions"
+            href="/#occasions"
             style={{ fontSize: '0.925rem', fontWeight: 500, color: 'var(--color-text-secondary)' }}
           >
             Occasions
           </a>
           <a
-            href="#faq"
+            href="/#faq"
             style={{ fontSize: '0.925rem', fontWeight: 500, color: 'var(--color-text-secondary)' }}
           >
             FAQ

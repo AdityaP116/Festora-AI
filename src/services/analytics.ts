@@ -27,10 +27,23 @@ class AnalyticsService {
    * Tracks a high-level user conversion event.
    */
   track(eventName: ConversionEventName, properties?: Record<string, unknown>): void {
-    // Check consent preference
-    const consent = localStorage.getItem('festora_cookie_consent');
-    if (consent === 'rejected') {
-      return; // Respect user rejection of analytics
+    // Check consent preference: require explicit positive consent ('accepted' or custom prefs with analytics === true)
+    if (typeof localStorage !== 'undefined') {
+      const consent = localStorage.getItem('festora_cookie_consent');
+      if (!consent || consent === 'rejected') {
+        return; // Do not track if not consented or explicitly rejected (GDPR / ePrivacy compliant)
+      }
+      if (consent === 'custom') {
+        try {
+          const rawPrefs = localStorage.getItem('festora_cookie_preferences');
+          const prefs = rawPrefs ? JSON.parse(rawPrefs) : null;
+          if (!prefs || !prefs.analytics) {
+            return;
+          }
+        } catch {
+          return;
+        }
+      }
     }
 
     const payload: AnalyticsEvent = {
