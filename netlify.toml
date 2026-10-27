@@ -1,0 +1,31 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Netlify Secrets Scanner flags:
+  # Netlify treats any value entered in the site's "Environment variables" dashboard as sensitive,
+  # and will fail the build if any files (like .env.example, README.md, package.json, or bundled code)
+  # match those strings (e.g. project name 'festora-ai', port numbers like 5001, 8080, 9099, or localhost IP 127.0.0.1).
+  # We omit public Vite client config keys and common port/host variables from the secrets scanner.
+  SECRETS_SCAN_OMIT_KEYS = "PORT,VITE_API_BASE_URL,VITE_FIREBASE_AUTH_DOMAIN,VITE_FIREBASE_AUTH_PORT,VITE_FIREBASE_EMULATOR_HOST,VITE_FIREBASE_MESSAGING_SENDER_ID,VITE_FIREBASE_PROJECT_ID,FIREBASE_PROJECT_ID,VITE_FIREBASE_STORAGE_BUCKET,VITE_FIREBASE_FIRESTORE_PORT,VITE_FIREBASE_MEASUREMENT_ID,VITE_FIREBASE_APP_ID"
+
+# SPA Fallback: Redirect all routes to index.html for React Router
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Cache control and security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

@@ -5,7 +5,9 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react()],
   build: {
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 800,
+    sourcemap: false,
+    reportCompressedSize: false,
     rollupOptions: {
       output: {
         manualChunks(id: string) {
