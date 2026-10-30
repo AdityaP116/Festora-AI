@@ -221,7 +221,7 @@ export const Footer: React.FC = () => {
                   e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
                   <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 15 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.16 7.39C8.97 7.39 8.78 7.46 8.63 7.67C8.42 7.88 7.87 8.41 7.87 9.5C7.87 10.59 8.66 11.64 8.77 11.79C8.88 11.94 10.3 14.13 12.5 15.08C13.03 15.31 13.44 15.45 13.76 15.55C14.29 15.72 14.77 15.7 15.15 15.64C15.58 15.58 16.47 15.1 16.66 14.57C16.85 14.04 16.85 13.59 16.79 13.5C16.73 13.41 16.58 13.35 16.32 13.22C16.06 13.09 14.79 12.46 14.56 12.38C14.33 12.3 14.16 12.26 13.99 12.52C13.82 12.78 13.33 13.35 13.18 13.52C13.03 13.69 12.88 13.71 12.62 13.58C12.36 13.45 11.53 13.18 10.55 12.31C9.79 11.63 9.27 10.79 9.12 10.53C8.97 10.27 9.11 10.13 9.24 10C9.36 9.88 9.5 9.7 9.63 9.55C9.76 9.4 9.81 9.29 9.89 9.12C9.97 8.95 9.93 8.81 9.87 8.68C9.81 8.55 9.32 7.35 9.16 7.39Z" />
                 </svg>
               </a>
@@ -256,7 +256,7 @@ export const Footer: React.FC = () => {
                   e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
                   <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                   <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                   <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
@@ -293,7 +293,7 @@ export const Footer: React.FC = () => {
                   e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                 </svg>
               </a>

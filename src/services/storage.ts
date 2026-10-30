@@ -144,7 +144,10 @@ export const StorageService = {
         createdId = serverEvent.id;
       }
     } catch (syncErr) {
-      console.warn('Event created in local workspace; cloud sync offline or deferred:', syncErr);
+      const g = globalThis as unknown as { process?: { env?: { NODE_ENV?: string } } };
+      if (g.process?.env?.NODE_ENV !== 'test') {
+        console.warn('Event created in local workspace; cloud sync offline or deferred:', syncErr);
+      }
     }
 
     const newEvent: EventDocument = {
@@ -653,7 +656,10 @@ export const StorageService = {
     try {
       await ApiClient.applyEventPlan(eventId, planVersion.id, proposal, changeSummary);
     } catch (syncErr) {
-      console.warn('Plan applied to local workspace; cloud sync offline or deferred:', syncErr);
+      const g = globalThis as unknown as { process?: { env?: { NODE_ENV?: string } } };
+      if (g.process?.env?.NODE_ENV !== 'test') {
+        console.warn('Plan applied to local workspace; cloud sync offline or deferred:', syncErr);
+      }
     }
 
     return planVersion;
