@@ -7,10 +7,22 @@ export interface AuthContext {
 
 export class AuthorizationError extends Error {
   code: string;
-  constructor(message: string, code = 'PERMISSION_DENIED') {
+  retryAfterSeconds?: number;
+  limit?: number;
+  remaining?: number;
+  constructor(
+    message: string,
+    code = 'PERMISSION_DENIED',
+    meta?: { retryAfterSeconds?: number; limit?: number; remaining?: number }
+  ) {
     super(message);
     this.name = 'AuthorizationError';
     this.code = code;
+    if (meta) {
+      this.retryAfterSeconds = meta.retryAfterSeconds;
+      this.limit = meta.limit;
+      this.remaining = meta.remaining;
+    }
   }
 }
 
@@ -28,11 +40,16 @@ export async function verifyAuthHeader(authHeader?: string): Promise<AuthContext
     throw new AuthorizationError('Malformed authorization token.', 'UNAUTHENTICATED');
   }
 
-  // Development/Test mock token bypass when running in test mode or local emulator/dev
-  if (
+  // Fail-closed security rule: Never allow mock tokens if NODE_ENV is production
+  const isProduction = process.env.NODE_ENV === 'production';
+  const isExplicitDevOrTest =
+    !isProduction &&
     (process.env.NODE_ENV === 'test' ||
-      process.env.NODE_ENV === 'development' ||
-      process.env.FUNCTIONS_EMULATOR === 'true') &&
+      (process.env.NODE_ENV === 'development' && process.env.FUNCTIONS_EMULATOR === 'true'));
+
+  // Development/Test mock token bypass strictly restricted to isolated test/emulator environments
+  if (
+    isExplicitDevOrTest &&
     (idToken.startsWith('test_token_') || idToken.startsWith('dev_token_'))
   ) {
     const testUid = idToken.replace(/^(test_token_|dev_token_)/, '');

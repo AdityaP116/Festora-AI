@@ -38,10 +38,15 @@ exports.verifyAuthHeader = verifyAuthHeader;
 exports.verifyEventOwnership = verifyEventOwnership;
 const admin = __importStar(require("firebase-admin"));
 class AuthorizationError extends Error {
-    constructor(message, code = 'PERMISSION_DENIED') {
+    constructor(message, code = 'PERMISSION_DENIED', meta) {
         super(message);
         this.name = 'AuthorizationError';
         this.code = code;
+        if (meta) {
+            this.retryAfterSeconds = meta.retryAfterSeconds;
+            this.limit = meta.limit;
+            this.remaining = meta.remaining;
+        }
     }
 }
 exports.AuthorizationError = AuthorizationError;
@@ -57,10 +62,13 @@ async function verifyAuthHeader(authHeader) {
     if (!idToken) {
         throw new AuthorizationError('Malformed authorization token.', 'UNAUTHENTICATED');
     }
-    // Development/Test mock token bypass when running in test mode or local emulator/dev
-    if ((process.env.NODE_ENV === 'test' ||
-        process.env.NODE_ENV === 'development' ||
-        process.env.FUNCTIONS_EMULATOR === 'true') &&
+    // Fail-closed security rule: Never allow mock tokens if NODE_ENV is production
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isExplicitDevOrTest = !isProduction &&
+        (process.env.NODE_ENV === 'test' ||
+            (process.env.NODE_ENV === 'development' && process.env.FUNCTIONS_EMULATOR === 'true'));
+    // Development/Test mock token bypass strictly restricted to isolated test/emulator environments
+    if (isExplicitDevOrTest &&
         (idToken.startsWith('test_token_') || idToken.startsWith('dev_token_'))) {
         const testUid = idToken.replace(/^(test_token_|dev_token_)/, '');
         return { uid: testUid, email: `${testUid}@festora.test` };

@@ -81,15 +81,23 @@ async function handleDeleteEvent(authHeader, eventId, firestore) {
     await (0, authorization_1.verifyEventOwnership)(firestore, auth.uid, eventId);
     const eventRef = firestore.collection('users').doc(auth.uid).collection('events').doc(eventId);
     const subcollections = ['tasks', 'expenses', 'budgets', 'vendors', 'guests', 'planVersions'];
-    // Delete all docs in each subcollection
+    // Delete all docs in each subcollection with bounded batch chunking (max 400 per commit)
     for (const sub of subcollections) {
-        const subSnap = await eventRef.collection(sub).get();
-        const batch = firestore.batch();
-        for (const doc of subSnap.docs) {
-            batch.delete(doc.ref);
-        }
-        if (!subSnap.empty) {
+        let hasMore = true;
+        while (hasMore) {
+            const subSnap = await eventRef.collection(sub).limit(400).get();
+            if (subSnap.empty) {
+                hasMore = false;
+                break;
+            }
+            const batch = firestore.batch();
+            for (const doc of subSnap.docs) {
+                batch.delete(doc.ref);
+            }
             await batch.commit();
+            if (subSnap.size < 400) {
+                hasMore = false;
+            }
         }
     }
     // Delete parent document

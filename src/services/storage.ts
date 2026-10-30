@@ -574,7 +574,8 @@ export const StorageService = {
     const state = loadState();
     const now = new Date().toISOString();
     const versions = state.planVersions[eventId] || [];
-    const nextVersionNumber = versions.length + 1;
+    const maxVersion = versions.reduce((max, v) => (v.version > max ? v.version : max), 0);
+    const nextVersionNumber = maxVersion + 1;
 
     // 1. Create plan version snapshot
     const planVersion: PlanVersionDocument = {
@@ -644,11 +645,14 @@ export const StorageService = {
       };
     }
 
-    // 5. Store plan version
+    // 5. Store plan version (bounded to max 10 historical versions to prevent quota exhaustion)
     if (!state.planVersions[eventId]) {
       state.planVersions[eventId] = [];
     }
     state.planVersions[eventId].unshift(planVersion);
+    if (state.planVersions[eventId].length > 10) {
+      state.planVersions[eventId] = state.planVersions[eventId].slice(0, 10);
+    }
 
     saveState(state);
 
@@ -663,5 +667,15 @@ export const StorageService = {
     }
 
     return planVersion;
+  },
+
+  /**
+   * Clears all local workspace and personal offline cache (e.g. on user sign out).
+   */
+  clearWorkspaceData(): void {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+    delete inMemoryStore[STORAGE_KEY];
   },
 };

@@ -54,19 +54,54 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5001;
+function isOriginAllowed(origin) {
+    if (!origin)
+        return false;
+    try {
+        const parsed = new URL(origin);
+        // Allow local development servers on approved ports
+        if ((parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
+            (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') &&
+            ['5173', '5000', '3000', '4173'].includes(parsed.port || '80')) {
+            return true;
+        }
+        // Allow production and staging domains under festora.ai or configured origin
+        if (parsed.protocol === 'https:') {
+            if (parsed.hostname === 'festora.ai' || parsed.hostname.endsWith('.festora.ai')) {
+                // Prevent lookalike hostnames (must be festora.ai or a direct subdomain *.festora.ai)
+                const parts = parsed.hostname.split('.');
+                const isFestoraDomain = parts.slice(-2).join('.') === 'festora.ai';
+                if (isFestoraDomain)
+                    return true;
+            }
+            if (parsed.hostname === 'festora-ai.netlify.app') {
+                return true;
+            }
+        }
+        if (process.env.ALLOWED_ORIGIN && origin === process.env.ALLOWED_ORIGIN) {
+            return true;
+        }
+        return false;
+    }
+    catch {
+        return false;
+    }
+}
 function setCorsHeaders(req, res) {
-    const origin = req.headers.origin || 'http://localhost:5173';
-    // Allow localhost origins or matching configured frontends
-    if (origin === 'http://localhost:5173' || origin === 'http://127.0.0.1:5173' || origin.endsWith('.festora.ai')) {
+    const origin = req.headers.origin;
+    const isAllowed = origin && isOriginAllowed(origin);
+    if (isAllowed) {
         res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
     }
     else {
-        res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+        // Fail closed: do not reflect untrusted origins or allow credentials
+        res.setHeader('Access-Control-Allow-Origin', 'null');
     }
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-request-id');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Max-Age', '86400');
+    res.setHeader('Vary', 'Origin');
     // Hardened Security Headers (HTTPS/TLS enforcement and MIME sniffing protection)
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
@@ -126,11 +161,17 @@ function handleError(res, error, requestId) {
         });
     }
     else if (code === 'RESOURCE_EXHAUSTED') {
+        const authErr = error;
+        const retryAfter = authErr.retryAfterSeconds || 60;
+        res.setHeader('Retry-After', String(retryAfter));
+        res.setHeader('RateLimit-Limit', String(authErr.limit || 5));
+        res.setHeader('RateLimit-Remaining', String(authErr.remaining ?? 0));
+        res.setHeader('RateLimit-Reset', String(retryAfter));
         security_logger_1.SecurityLogger.log({
             eventType: 'RATE_LIMIT_EXCEEDED',
             severity: 'MEDIUM',
             requestId,
-            details: { message, code },
+            details: { message, code, retryAfterSeconds: retryAfter },
         });
     }
     sendJson(res, status, {
@@ -138,6 +179,9 @@ function handleError(res, error, requestId) {
             code,
             message,
             ...(requestId ? { requestId } : {}),
+            ...(code === 'RESOURCE_EXHAUSTED' && typeof error?.retryAfterSeconds === 'number'
+                ? { retryAfterSeconds: error.retryAfterSeconds }
+                : {}),
         },
     });
 }

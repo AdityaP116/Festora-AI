@@ -46,28 +46,49 @@ if (!admin.apps.length) {
     admin.initializeApp();
 }
 const db = admin.firestore();
-const ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'http://localhost:5000',
-    'http://127.0.0.1:5000',
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-];
+function isOriginAllowed(origin) {
+    if (!origin)
+        return false;
+    try {
+        const parsed = new URL(origin);
+        if ((parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
+            (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') &&
+            ['5173', '5000', '3000', '4173'].includes(parsed.port || '80')) {
+            return true;
+        }
+        if (parsed.protocol === 'https:') {
+            if (parsed.hostname === 'festora.ai' || parsed.hostname.endsWith('.festora.ai')) {
+                const parts = parsed.hostname.split('.');
+                const isFestoraDomain = parts.slice(-2).join('.') === 'festora.ai';
+                if (isFestoraDomain)
+                    return true;
+            }
+            if (parsed.hostname === 'festora-ai.netlify.app') {
+                return true;
+            }
+        }
+        if (process.env.ALLOWED_ORIGIN && origin === process.env.ALLOWED_ORIGIN) {
+            return true;
+        }
+        return false;
+    }
+    catch {
+        return false;
+    }
+}
 function setCorsHeaders(res, req) {
     const origin = typeof req?.headers?.origin === 'string' ? req.headers.origin : undefined;
-    const configuredOrigin = process.env.ALLOWED_ORIGIN;
-    let allowOrigin = 'http://localhost:5173';
-    if (origin) {
-        if (ALLOWED_ORIGINS.includes(origin) || origin === configuredOrigin || process.env.NODE_ENV !== 'production') {
-            allowOrigin = origin;
-        }
+    if (origin && isOriginAllowed(origin)) {
+        res.set('Access-Control-Allow-Origin', origin);
+        res.set('Access-Control-Allow-Credentials', 'true');
     }
-    res.set('Access-Control-Allow-Origin', allowOrigin);
+    else {
+        res.set('Access-Control-Allow-Origin', 'null');
+    }
     res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-request-id');
-    res.set('Access-Control-Allow-Credentials', 'true');
     res.set('Access-Control-Max-Age', '86400');
+    res.set('Vary', 'Origin');
 }
 function handleError(res, error, requestId) {
     const err = (error && typeof error === 'object' ? error : {});
@@ -85,11 +106,21 @@ function handleError(res, error, requestId) {
         INTERNAL: 500,
     };
     const status = statusMap[code] || 500;
+    if (code === 'RESOURCE_EXHAUSTED') {
+        const retryAfter = err.retryAfterSeconds || 60;
+        res.set('Retry-After', String(retryAfter));
+        res.set('RateLimit-Limit', String(err.limit || 5));
+        res.set('RateLimit-Remaining', String(err.remaining ?? 0));
+        res.set('RateLimit-Reset', String(retryAfter));
+    }
     res.status(status).json({
         error: {
             code,
             message,
             ...(requestId ? { requestId } : {}),
+            ...(code === 'RESOURCE_EXHAUSTED' && typeof err.retryAfterSeconds === 'number'
+                ? { retryAfterSeconds: err.retryAfterSeconds }
+                : {}),
         },
     });
 }

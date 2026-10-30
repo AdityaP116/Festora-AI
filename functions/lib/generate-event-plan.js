@@ -46,8 +46,8 @@ const security_logger_1 = require("./services/security-logger");
 async function handleGenerateEventPlan(authHeader, body, firestore) {
     // 1. Authenticate user
     const auth = await (0, authorization_1.verifyAuthHeader)(authHeader);
-    // 2. Rate limiting check
-    const rateLimit = (0, rate_limits_1.checkRateLimit)(auth.uid);
+    // 2. Distributed rate limiting check backed by Firestore
+    const rateLimit = await (0, rate_limits_1.checkDistributedRateLimit)(firestore, auth.uid, 5, 60);
     if (!rateLimit.allowed) {
         security_logger_1.SecurityLogger.log({
             eventType: 'RATE_LIMIT_EXCEEDED',
@@ -56,7 +56,7 @@ async function handleGenerateEventPlan(authHeader, body, firestore) {
             endpoint: '/generateEventPlan',
             details: { retryAfterSeconds: rateLimit.retryAfterSeconds },
         });
-        throw new authorization_1.AuthorizationError(`Rate limit exceeded. Please wait ${rateLimit.retryAfterSeconds}s before generating another plan.`, 'RESOURCE_EXHAUSTED');
+        throw new authorization_1.AuthorizationError(`Rate limit exceeded. Please wait ${rateLimit.retryAfterSeconds}s before generating another plan.`, 'RESOURCE_EXHAUSTED', { retryAfterSeconds: rateLimit.retryAfterSeconds, limit: 5, remaining: 0 });
     }
     // 3. Validate input schema
     const parsedInput = ai_schemas_1.ValidatedEventInputSchema.safeParse(body.eventInput);

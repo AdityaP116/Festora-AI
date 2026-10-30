@@ -98,6 +98,19 @@ export const GuestsPage: React.FC = () => {
       ? dietary.split(',').map((d) => d.trim()).filter(Boolean)
       : undefined;
 
+    if (dietaryArray) {
+      if (dietaryArray.length > 20) {
+        setFormError('Too many dietary preferences. Please limit to a maximum of 20 items.');
+        return;
+      }
+      for (const item of dietaryArray) {
+        if (item.length > 50) {
+          setFormError(`Dietary preference "${item.slice(0, 20)}..." exceeds maximum allowed length of 50 characters.`);
+          return;
+        }
+      }
+    }
+
     try {
       if (editingGuest) {
         const updated = await StorageService.updateGuest(eventId, editingGuest.id, {

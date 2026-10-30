@@ -4,7 +4,7 @@ import {
   type AIPlanProposal,
 } from './schemas/ai-schemas';
 import { verifyAuthHeader, AuthorizationError } from './services/authorization';
-import { checkRateLimit } from './services/rate-limits';
+import { checkDistributedRateLimit } from './services/rate-limits';
 import { callGeminiForPlan } from './services/gemini-client';
 import { SecurityLogger } from './services/security-logger';
 
@@ -31,8 +31,8 @@ export async function handleGenerateEventPlan(
   // 1. Authenticate user
   const auth = await verifyAuthHeader(authHeader);
 
-  // 2. Rate limiting check
-  const rateLimit = checkRateLimit(auth.uid);
+  // 2. Distributed rate limiting check backed by Firestore
+  const rateLimit = await checkDistributedRateLimit(firestore, auth.uid, 5, 60);
   if (!rateLimit.allowed) {
     SecurityLogger.log({
       eventType: 'RATE_LIMIT_EXCEEDED',
@@ -43,7 +43,8 @@ export async function handleGenerateEventPlan(
     });
     throw new AuthorizationError(
       `Rate limit exceeded. Please wait ${rateLimit.retryAfterSeconds}s before generating another plan.`,
-      'RESOURCE_EXHAUSTED'
+      'RESOURCE_EXHAUSTED',
+      { retryAfterSeconds: rateLimit.retryAfterSeconds, limit: 5, remaining: 0 }
     );
   }
 

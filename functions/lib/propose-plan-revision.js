@@ -3,9 +3,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleProposePlanRevision = handleProposePlanRevision;
 const ai_schemas_1 = require("./schemas/ai-schemas");
 const authorization_1 = require("./services/authorization");
+const rate_limits_1 = require("./services/rate-limits");
 async function handleProposePlanRevision(authHeader, body, firestore) {
     // 1. Authenticate caller
     const auth = await (0, authorization_1.verifyAuthHeader)(authHeader);
+    // Rate limit check
+    const rateLimit = await (0, rate_limits_1.checkDistributedRateLimit)(firestore, auth.uid, 5, 60);
+    if (!rateLimit.allowed) {
+        throw new authorization_1.AuthorizationError(`Rate limit exceeded. Please wait ${rateLimit.retryAfterSeconds}s before proposing another revision.`, 'RESOURCE_EXHAUSTED', { retryAfterSeconds: rateLimit.retryAfterSeconds, limit: 5, remaining: 0 });
+    }
     // 2. Validate input schema
     const parsed = ai_schemas_1.ProposePlanRevisionRequestSchema.safeParse(body);
     if (!parsed.success) {

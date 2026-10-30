@@ -5,6 +5,7 @@ import {
   type AIPlanProposal,
 } from './schemas/ai-schemas';
 import { verifyAuthHeader, verifyEventOwnership, AuthorizationError } from './services/authorization';
+import { checkDistributedRateLimit } from './services/rate-limits';
 
 export async function handleProposePlanRevision(
   authHeader: string | undefined,
@@ -13,6 +14,16 @@ export async function handleProposePlanRevision(
 ): Promise<{ revisedPlan: AIPlanProposal; changeSummary: string }> {
   // 1. Authenticate caller
   const auth = await verifyAuthHeader(authHeader);
+
+  // Rate limit check
+  const rateLimit = await checkDistributedRateLimit(firestore, auth.uid, 5, 60);
+  if (!rateLimit.allowed) {
+    throw new AuthorizationError(
+      `Rate limit exceeded. Please wait ${rateLimit.retryAfterSeconds}s before proposing another revision.`,
+      'RESOURCE_EXHAUSTED',
+      { retryAfterSeconds: rateLimit.retryAfterSeconds, limit: 5, remaining: 0 }
+    );
+  }
 
   // 2. Validate input schema
   const parsed = ProposePlanRevisionRequestSchema.safeParse(body);
