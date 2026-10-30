@@ -20,6 +20,8 @@ describe('Task Rules & Metrics (TEST_PLAN.md Section 2)', () => {
     const tasks: TaskDocument[] = [
       {
         id: 't1',
+        eventId: 'evt_test',
+        revision: 1,
         title: 'Task 1',
         category: 'venue',
         priority: 'high',
@@ -32,6 +34,8 @@ describe('Task Rules & Metrics (TEST_PLAN.md Section 2)', () => {
       },
       {
         id: 't2',
+        eventId: 'evt_test',
+        revision: 1,
         title: 'Task 2',
         category: 'catering',
         priority: 'medium',
@@ -44,6 +48,8 @@ describe('Task Rules & Metrics (TEST_PLAN.md Section 2)', () => {
       },
       {
         id: 't3',
+        eventId: 'evt_test',
+        revision: 1,
         title: 'Task 3',
         category: 'decor',
         priority: 'low',
@@ -70,6 +76,8 @@ describe('Task Rules & Metrics (TEST_PLAN.md Section 2)', () => {
 
     const baseTask: TaskDocument = {
       id: 't_test',
+      eventId: 'evt_test',
+      revision: 1,
       title: 'Test',
       category: 'general',
       priority: 'medium',
@@ -98,6 +106,8 @@ describe('Task Rules & Metrics (TEST_PLAN.md Section 2)', () => {
 
     const baseTask: TaskDocument = {
       id: 't_test',
+      eventId: 'evt_test',
+      revision: 1,
       title: 'Test',
       category: 'general',
       priority: 'medium',
@@ -111,5 +121,59 @@ describe('Task Rules & Metrics (TEST_PLAN.md Section 2)', () => {
 
     expect(isTaskDueSoon({ ...baseTask, dueAt: tomorrowStr, status: 'pending' }, 3)).toBe(true);
     expect(isTaskDueSoon({ ...baseTask, dueAt: tomorrowStr, status: 'completed' }, 3)).toBe(false);
+  });
+
+  it('correctly filters and differentiates event-day tasks from milestone preparation tasks', () => {
+    const tasks: TaskDocument[] = [
+      {
+        id: 'prep_1',
+        eventId: 'evt_test',
+        revision: 1,
+        title: 'Book Florist',
+        category: 'decor',
+        priority: 'high',
+        status: 'completed',
+        dueAt: '2027-04-01',
+        isEventDayTask: false,
+        source: 'ai',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: 'day_1',
+        eventId: 'evt_test',
+        revision: 1,
+        title: 'Coordinator Soundcheck & Mic Setup',
+        category: 'music',
+        priority: 'critical',
+        status: 'pending',
+        dueAt: '2027-05-20',
+        isEventDayTask: true,
+        source: 'ai',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: 'day_2',
+        eventId: 'evt_test',
+        revision: 1,
+        title: 'Welcome VIP Guests at Main Entrance',
+        category: 'reception',
+        priority: 'high',
+        status: 'pending',
+        dueAt: '2027-05-20',
+        isEventDayTask: true,
+        source: 'user',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ];
+
+    const eventDayTasks = tasks.filter((t) => t.isEventDayTask);
+    const preparationTasks = tasks.filter((t) => !t.isEventDayTask);
+
+    expect(eventDayTasks.length).toBe(2);
+    expect(preparationTasks.length).toBe(1);
+    expect(eventDayTasks.some((t) => t.priority === 'critical')).toBe(true);
   });
 });
