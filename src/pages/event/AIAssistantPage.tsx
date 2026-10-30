@@ -127,6 +127,8 @@ export const AIAssistantPage: React.FC = () => {
 
       {statusMessage && (
         <div
+          role="status"
+          aria-live="polite"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -170,6 +172,14 @@ export const AIAssistantPage: React.FC = () => {
             disabled={isRevising}
           >
             🛡️ Add 10% Contingency Buffer
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => handleQuickRevision('Rebalance category budgets to absorb overages without exceeding total limit')}
+            disabled={isRevising}
+          >
+            ⚖️ Rebalance Budget Allocations
           </button>
           <button
             type="button"

@@ -129,4 +129,34 @@ describe('Budget Calculations & Invariants (TEST_PLAN.md Section 2)', () => {
     expect(usdFormatted).toContain('$');
     expect(usdFormatted).toContain('5,000');
   });
+
+  it('detects category over-allocation when actual spend exceeds estimated category allocation', () => {
+    const category: BudgetCategoryDocument = {
+      id: 'cat_venue',
+      categoryKey: 'venue',
+      name: 'Venue & Staging',
+      estimatedAmountMinor: 4000000,
+      source: 'ai_estimate',
+      updatedAt: new Date().toISOString(),
+    };
+
+    const expenseOver: ExpenseDocument = {
+      id: 'exp_venue_over',
+      description: 'Grand Ballroom Premium Booking',
+      categoryKey: 'venue',
+      actualAmountMinor: 5500000,
+      currency: 'INR',
+      expenseStatus: 'incurred',
+      paymentStatus: 'paid',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      source: 'user',
+    };
+
+    const metrics = calculateBudgetMetrics(10000000, [category], [expenseOver]);
+    expect(metrics.actualSpendMinor).toBe(5500000);
+    // Category allocation variance: 5,500,000 spent vs 4,000,000 allocated
+    const categoryOverage = expenseOver.actualAmountMinor - category.estimatedAmountMinor;
+    expect(categoryOverage).toBe(1500000);
+  });
 });

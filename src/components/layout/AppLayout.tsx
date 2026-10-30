@@ -35,6 +35,34 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--color-background)' }}>
+      {/* Skip to Main Content Link for Keyboard / Screen Readers */}
+      <a
+        href="#main-content"
+        className="skip-link"
+        style={{
+          position: 'absolute',
+          top: '-9999px',
+          left: '1rem',
+          zIndex: 9999,
+          padding: '0.75rem 1.25rem',
+          backgroundColor: 'var(--color-primary)',
+          color: '#ffffff',
+          borderRadius: 'var(--radius-md)',
+          fontWeight: 600,
+          textDecoration: 'none',
+          boxShadow: 'var(--shadow-lg)',
+          transition: 'top 0.2s ease',
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.top = '1rem';
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.top = '-9999px';
+        }}
+      >
+        Skip to main content
+      </a>
+
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
@@ -234,7 +262,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </header>
 
         {/* Content Body */}
-        <main style={{ flex: 1, padding: '1.75rem 1.5rem 3.5rem' }}>
+        <main id="main-content" tabIndex={-1} style={{ flex: 1, padding: '1.75rem 1.5rem 3.5rem', outline: 'none' }}>
           <div style={{ maxWidth: '1240px', margin: '0 auto', width: '100%' }}>
             {children}
           </div>

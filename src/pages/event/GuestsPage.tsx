@@ -158,6 +158,17 @@ export const GuestsPage: React.FC = () => {
   const pendingCount = guests.filter((g) => g.rsvpStatus === 'invited' || g.rsvpStatus === 'maybe').length;
   const declinedCount = guests.filter((g) => g.rsvpStatus === 'declined').length;
 
+  // Catering dietary breakdown
+  const dietaryCounts: Record<string, number> = {};
+  confirmedGuests.forEach((g) => {
+    (g.dietaryPreferences || []).forEach((diet) => {
+      const clean = diet.trim().toLowerCase();
+      if (clean) {
+        dietaryCounts[clean] = (dietaryCounts[clean] || 0) + 1;
+      }
+    });
+  });
+
   const filteredGuests = guests.filter((g) => {
     if (rsvpFilter !== 'all' && g.rsvpStatus !== rsvpFilter) return false;
     return true;
@@ -224,6 +235,53 @@ export const GuestsPage: React.FC = () => {
           variant="neutral"
         />
       </div>
+
+      {/* Catering & Dietary Requirements Summary */}
+      {Object.keys(dietaryCounts).length > 0 && (
+        <div
+          className="card"
+          style={{
+            padding: '1.25rem 1.5rem',
+            backgroundColor: 'var(--color-surface)',
+            borderLeft: '4px solid var(--color-accent)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <div>
+              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-text)' }}>
+                Catering Dietary Requirements (Confirmed Guests)
+              </h3>
+              <p style={{ fontSize: '0.825rem', color: 'var(--color-text-secondary)', marginTop: '0.15rem' }}>
+                Share these confirmed meal counts with your catering vendors.
+              </p>
+            </div>
+            <Badge variant="accent" size="sm">Catering Ready</Badge>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
+            {Object.entries(dietaryCounts).map(([diet, count]) => (
+              <div
+                key={diet}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.4rem 0.85rem',
+                  backgroundColor: 'var(--color-surface-hover)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: '0.85rem',
+                  fontWeight: 500,
+                  textTransform: 'capitalize',
+                }}
+              >
+                <span>{diet}</span>
+                <span style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Guest Directory Card */}
       <div className="card">

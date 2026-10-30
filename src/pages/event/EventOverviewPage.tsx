@@ -7,6 +7,8 @@ import {
   Sparkles,
   CheckCircle2,
   Trash2,
+  Download,
+  Printer,
 } from 'lucide-react';
 import { StorageService } from '../../services/storage';
 import { useAuth } from '../../services/auth-context';
@@ -107,8 +109,72 @@ export const EventOverviewPage: React.FC = () => {
     }
   };
 
+  const exportRunSheetCSV = () => {
+    if (!event) return;
+    const headers = ['Task Title', 'Category', 'Priority', 'Status', 'Due Date', 'Event Day Task'];
+    const rows = tasks.map((t) => [
+      `"${(t.title || '').replace(/"/g, '""')}"`,
+      `"${t.category || 'General'}"`,
+      `"${t.priority || 'medium'}"`,
+      `"${t.status || 'pending'}"`,
+      `"${t.dueAt || ''}"`,
+      `"${t.isEventDayTask ? 'Yes' : 'No'}"`,
+    ]);
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${event.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}_run_sheet.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePrintRunSheet = () => {
+    window.print();
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      {/* Header with Export & Print Run Sheet Toolbar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h2 style={{ fontSize: '1.45rem', fontWeight: 700, color: 'var(--color-text)' }}>
+            {event.title}
+          </h2>
+          <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', marginTop: '0.2rem' }}>
+            {event.location.label} • {new Date(event.startAt).toLocaleDateString()} • {event.guestCount} Guests
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={exportRunSheetCSV}
+            title="Export coordinator run sheet as CSV"
+            aria-label="Export coordinator run sheet as CSV"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+          >
+            <Download size={15} />
+            <span>Export Run Sheet</span>
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={handlePrintRunSheet}
+            title="Print coordinator packet"
+            aria-label="Print coordinator packet"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+          >
+            <Printer size={15} />
+            <span>Print Packet</span>
+          </button>
+        </div>
+      </div>
+
       {/* Overview Metric Cards */}
       <div
         style={{
@@ -209,7 +275,7 @@ export const EventOverviewPage: React.FC = () => {
                           justifyContent: 'center',
                           flexShrink: 0,
                         }}
-                        aria-label="Mark task complete"
+                        aria-label={`Mark task ${task.title} as completed`}
                       />
                       <div style={{ overflow: 'hidden' }}>
                         <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

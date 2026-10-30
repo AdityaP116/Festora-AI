@@ -298,7 +298,7 @@ export const BudgetPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Progress Bar */}
+                  {/* Progress Bar & Over-Allocation Warning */}
                   <div style={{ width: '100%', height: '8px', backgroundColor: '#EAE6F0', borderRadius: '4px', overflow: 'hidden' }}>
                     <div
                       style={{
@@ -309,9 +309,16 @@ export const BudgetPage: React.FC = () => {
                       }}
                     />
                   </div>
-                  {cat.notes && (
-                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{cat.notes}</span>
-                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem' }}>
+                    {cat.notes ? (
+                      <span style={{ color: 'var(--color-text-muted)' }}>{cat.notes}</span>
+                    ) : <span />}
+                    {catActual > cat.estimatedAmountMinor && (
+                      <span style={{ color: 'var(--color-danger)', fontWeight: 600 }}>
+                        Over allocated by {formatCurrency(catActual - cat.estimatedAmountMinor, event.currency)}
+                      </span>
+                    )}
+                  </div>
                 </div>
               );
             })}
