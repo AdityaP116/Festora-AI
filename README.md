@@ -416,7 +416,7 @@ The backend exposes an HTTP REST API defined in [`functions/src/server.ts`](func
 The repository includes a comprehensive, multi-layer automated test suite using **Vitest**. For details on the testing philosophy, pyramid layers, and benchmark targets, see [TEST_STRATEGY.md](docs/testing/TEST_STRATEGY.md) and historical reports in [docs/](docs/README.md).
 
 ```bash
-# Run all automated tests (82 tests across 13 files)
+# Run all automated tests (96 tests across 14 test suites)
 npm test
 
 # Run tests with test coverage reporting

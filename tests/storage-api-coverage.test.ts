@@ -200,5 +200,161 @@ describe('Issue 11 - Storage and API Client Comprehensive Branch Coverage', () =
       const eventsAfter = await StorageService.getEvents('user_privacy_test');
       expect(eventsAfter.length).toBe(0);
     });
+
+    it('performs full vendor CRUD operations with state persistence', async () => {
+      const eventId = 'evt_vendor_suite';
+      const vendor = await StorageService.createVendor({
+        eventId,
+        name: 'Royal Catering Co',
+        category: 'catering',
+        contactName: 'Chef Vikram',
+        email: 'vikram@catering.test',
+        phone: '+91 98765 00000',
+        bookingStatus: 'quoted',
+        paymentStatus: 'unpaid',
+        source: 'user_entered',
+        notes: 'Requested tasting session',
+      });
+
+      expect(vendor.id).toBeDefined();
+      expect(vendor.name).toBe('Royal Catering Co');
+
+      const vendors = await StorageService.getVendors(eventId);
+      expect(vendors.length).toBe(1);
+
+      const updated = await StorageService.updateVendor(eventId, vendor.id, {
+        bookingStatus: 'booked',
+        quotedAmountMinor: 15000000,
+      });
+      expect(updated.bookingStatus).toBe('booked');
+      expect(updated.quotedAmountMinor).toBe(15000000);
+
+      await StorageService.deleteVendor(eventId, vendor.id);
+      const afterDelete = await StorageService.getVendors(eventId);
+      expect(afterDelete.length).toBe(0);
+    });
+
+    it('throws error when updating non-existent vendor', async () => {
+      await expect(
+        StorageService.updateVendor('evt_none', 'vnd_invalid', { name: 'New' })
+      ).rejects.toThrow('NOT_FOUND: Vendor not found');
+    });
+
+    it('performs guest, schedule, and milestone operations accurately', async () => {
+      const eventId = 'evt_guest_suite';
+
+      // Guest operations
+      const guest = await StorageService.createGuest({
+        eventId,
+        displayName: 'Ananya Sharma',
+        group: 'Friends',
+        rsvpStatus: 'confirmed',
+        plusOneCount: 1,
+        dietaryPreferences: ['Vegetarian', 'Gluten-Free'],
+      });
+
+      expect(guest.id).toBeDefined();
+      const guests = await StorageService.getGuests(eventId);
+      expect(guests.length).toBe(1);
+
+      const updatedGuest = await StorageService.updateGuest(eventId, guest.id, {
+        rsvpStatus: 'declined',
+      });
+      expect(updatedGuest.rsvpStatus).toBe('declined');
+
+      await StorageService.deleteGuest(eventId, guest.id);
+      expect((await StorageService.getGuests(eventId)).length).toBe(0);
+
+      // Custom schedule operations
+      await StorageService.addCustomScheduleItem(eventId, {
+        startLocalTime: '18:00',
+        endLocalTime: '19:00',
+        title: 'Welcome Cocktail Hour',
+        notes: 'Acoustic jazz quartet',
+      });
+
+      const schedules = await StorageService.getCustomSchedule(eventId);
+      expect(schedules.length).toBe(1);
+      expect(schedules[0].title).toBe('Welcome Cocktail Hour');
+
+      // Custom milestone operations
+      await StorageService.addCustomMilestone(eventId, {
+        title: 'Final Invitations Dispatched',
+        targetDate: '2027-09-01',
+        description: 'Sent digital invites via email',
+      });
+
+      const milestones = await StorageService.getCustomMilestones(eventId);
+      expect(milestones.length).toBe(1);
+      expect(milestones[0].title).toBe('Final Invitations Dispatched');
+    });
+
+    it('throws error when updating non-existent guest', async () => {
+      await expect(
+        StorageService.updateGuest('evt_none', 'gst_invalid', { displayName: 'Ghost' })
+      ).rejects.toThrow('NOT_FOUND: Guest not found');
+    });
+
+    it('handles expense updates and deletions cleanly', async () => {
+      const eventId = 'evt_exp_test';
+      const expense = await StorageService.createExpense({
+        eventId,
+        description: 'Floral Arch Advance',
+        categoryKey: 'decor',
+        actualAmountMinor: 250000,
+        currency: 'INR',
+        expenseStatus: 'incurred',
+        paymentStatus: 'paid',
+        source: 'user',
+      });
+
+      expect(expense.id).toBeDefined();
+
+      const updated = await StorageService.updateExpense(eventId, expense.id, {
+        actualAmountMinor: 300000,
+      });
+      expect(updated.actualAmountMinor).toBe(300000);
+
+      await StorageService.deleteExpense(eventId, expense.id);
+      const expenses = await StorageService.getExpenses(eventId);
+      expect(expenses.length).toBe(0);
+    });
+
+    it('throws error when updating non-existent expense', async () => {
+      await expect(
+        StorageService.updateExpense('evt_none', 'exp_invalid', { description: 'Ghost' })
+      ).rejects.toThrow('NOT_FOUND: Expense not found');
+    });
+
+    it('handles task updates and deletions safely', async () => {
+      const eventId = 'evt_task_test';
+      const task = await StorageService.createTask({
+        eventId,
+        title: 'Sample Task',
+        category: 'venue',
+        priority: 'high',
+        status: 'pending',
+        isEventDayTask: false,
+        source: 'user',
+      });
+
+      expect(task.id).toBeDefined();
+
+      const updated = await StorageService.updateTask(eventId, task.id, {
+        status: 'completed',
+      });
+      expect(updated.status).toBe('completed');
+      expect(updated.revision).toBe(2);
+
+      await StorageService.deleteTask(eventId, task.id);
+      const tasks = await StorageService.getTasks(eventId);
+      expect(tasks.length).toBe(0);
+    });
+
+    it('throws error when updating non-existent task', async () => {
+      await expect(
+        StorageService.updateTask('evt_none', 'task_invalid', { status: 'completed' })
+      ).rejects.toThrow('NOT_FOUND: Task not found');
+    });
   });
 });
