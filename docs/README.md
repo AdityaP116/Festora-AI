@@ -28,13 +28,11 @@ Testing methodology, pyramids, and coverage goals are located in [`docs/testing/
 
 ---
 
-### 3. Historical Quality & Audit Reports
-Historical audit snapshots, gap matrices, and verification runs are archived in [`docs/reports/`](reports/):
-- **[FINAL_RELEASE_VERIFICATION.md](reports/FINAL_RELEASE_VERIFICATION.md)**: Comprehensive 27-item deep application audit covering architecture, confirmed defects, resolved vulnerabilities, and readiness evaluation.
-- **[ARCHITECTURE_AUDIT_REPORT.md](reports/ARCHITECTURE_AUDIT_REPORT.md)**: Architectural baseline audit covering Firestore synchronization, token handling, schema duplication, and performance.
-- **[TESTING_AUDIT_REPORT.md](reports/TESTING_AUDIT_REPORT.md)**: Initial testing matrix and gap analysis leading up to the multi-suite test expansion.
-- **[TEST_EXECUTION_REPORT.md](reports/TEST_EXECUTION_REPORT.md)**: Detailed execution log and code coverage metrics across all test suites.
-- **[RELEASE_READINESS_REPORT.md](reports/RELEASE_READINESS_REPORT.md)**: Production release quality gate assessment and rollback protocols.
+### 3. Scalability & Performance Engineering
+Scalability analysis, 10,000-user capacity models, and load-test plans are located in [`docs/scalability/`](scalability/):
+- **[ARCHITECTURE_AUDIT.md](scalability/ARCHITECTURE_AUDIT.md)**: Architectural topology audit, provider constraints, and component failure modes.
+- **[CAPACITY_ASSUMPTIONS.md](scalability/CAPACITY_ASSUMPTIONS.md)**: Mathematical 10,000 concurrent user workload model, user think times, and token throughput formulas.
+- **[SCALABILITY_REMEDIATION_PLAN.md](scalability/SCALABILITY_REMEDIATION_PLAN.md)**: Staged load-testing roadmap and dual-mode testing architecture (Mode A & Mode B).
 
 ---
 

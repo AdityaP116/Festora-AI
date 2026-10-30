@@ -199,7 +199,7 @@ Festora-AI/
 │   ├── types/                         # TypeScript interfaces and domain schemas
 │   ├── App.tsx                        # React Router routes and layout structure
 │   └── main.tsx                       # React application bootstrap
-├── tests/                             # Vitest automated test suite (12 test suites, 70 tests)
+├── tests/                             # Automated QA & load test suites (82 unit/int tests + k6)
 │   ├── ai-schema.test.ts              # Zod AI proposal contract tests
 │   ├── api-contracts.test.ts          # Backend REST contract verification
 │   ├── authorization.test.ts          # Authentication and token guard tests
@@ -211,7 +211,9 @@ Festora-AI/
 │   ├── performance.test.ts            # Sub-millisecond calculation benchmarks
 │   ├── plan-revision-safety.test.ts   # User task/expense preservation tests
 │   ├── security.test.ts               # Input sanitization and security boundary tests
-│   └── task-rules.test.ts             # Task scheduling and priority rules
+│   ├── storage-api-coverage.test.ts   # ApiClient branch errors, version pruning, and cache purging
+│   ├── task-rules.test.ts             # Task scheduling and priority rules
+│   └── load/                          # k6 progressive load tests (10 to 10,000 VUs)
 ├── .env.example                       # Documented environment variable template
 ├── DEPLOYMENT.md                      # Production deployment guide
 ├── firestore.rules                    # Cloud Firestore security rules
@@ -414,7 +416,7 @@ The backend exposes an HTTP REST API defined in [`functions/src/server.ts`](func
 The repository includes a comprehensive, multi-layer automated test suite using **Vitest**. For details on the testing philosophy, pyramid layers, and benchmark targets, see [TEST_STRATEGY.md](docs/testing/TEST_STRATEGY.md) and historical reports in [docs/](docs/README.md).
 
 ```bash
-# Run all automated tests (70 tests across 12 files)
+# Run all automated tests (82 tests across 13 files)
 npm test
 
 # Run tests with test coverage reporting
@@ -426,13 +428,17 @@ npm --prefix functions run build
 
 # Run ESLint validation
 npm run lint
+
+# Run k6 load-testing scenarios (Mode B: local capacity isolation)
+k6 run -e TARGET_VUS=10 -e TEST_DURATION=1m -e API_BASE_URL=http://127.0.0.1:5001 tests/load/scenarios.js
 ```
 
-### Verified Test Suites (100% Passing)
+### Verified Test Suites (100% Passing — 82/82 Tests)
 
+- [`tests/storage-api-coverage.test.ts`](tests/storage-api-coverage.test.ts): ApiClient failure branches, 204 parsing, network timeouts, Authorization header attachment, plan version pruning (10-version ceiling), and logout cache purging.
 - [`tests/ai-schema.test.ts`](tests/ai-schema.test.ts): Zod schema constraints, boundary checking, and rejection of malformed AI proposals.
 - [`tests/api-contracts.test.ts`](tests/api-contracts.test.ts): HTTP endpoint payloads, status codes, and error formatting.
-- [`tests/authorization.test.ts`](tests/authorization.test.ts): Token authentication guards and cross-tenant boundary isolation.
+- [`tests/authorization.test.ts`](tests/authorization.test.ts): Token authentication guards, fail-closed production checks, and cross-tenant boundary isolation.
 - [`tests/backend-services.test.ts`](tests/backend-services.test.ts): Rate limiting, security logger, and error mapping.
 - [`tests/budget.test.ts`](tests/budget.test.ts): Minor-unit integer math and budget variance tracking.
 - [`tests/database-persistence.test.ts`](tests/database-persistence.test.ts): Offline caching and Firestore adapter sync.
@@ -440,8 +446,9 @@ npm run lint
 - [`tests/legal-auth.test.ts`](tests/legal-auth.test.ts): Authentication lifecycle and legal compliance page routing.
 - [`tests/performance.test.ts`](tests/performance.test.ts): Sub-millisecond calculation benchmarks for budget and timeline engines.
 - [`tests/plan-revision-safety.test.ts`](tests/plan-revision-safety.test.ts): Proof that completed tasks and user expenses are never lost during AI revisions.
-- [`tests/security.test.ts`](tests/security.test.ts): XSS sanitization, prototype pollution defense, and payload size bounds.
+- [`tests/security.test.ts`](tests/security.test.ts): XSS sanitization, prototype pollution defense, CORS lookalike blocking, and payload size bounds.
 - [`tests/task-rules.test.ts`](tests/task-rules.test.ts): Task scheduling, priority scoring, and dependency ordering.
+- [`tests/load/`](tests/load/): k6 performance and 10,000-user capacity simulation suite with realistic human think times and workload distributions.
 
 ---
 
